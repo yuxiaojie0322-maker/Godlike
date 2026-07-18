@@ -4,11 +4,17 @@ on:
     - cron: '0 */2 * * *'
   workflow_dispatch:
 
+# 彻底解决清理历史时的 403 权限问题
+permissions:
+  actions: write
+  contents: read
+
 jobs:
   add_time_job:
     name: 运行续期脚本
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # 将超时时间扩大到 30 分钟，防止多账号加安装依赖导致超时被杀
+    timeout-minutes: 30
 
     steps:
       - name: 拉取仓库
@@ -324,6 +330,7 @@ jobs:
           cat xray.log
           exit 1
           
+       bondage:
       - name: 运行续期脚本
         env:
           GODLIKE_1: ${{ secrets.GODLIKE_1 }}
@@ -337,19 +344,12 @@ jobs:
           PROXY_SERVER: ${{ env.PROXY_SERVER }}
         run: python main.py
 
-#      - name: 上传截图
-#        if: always()
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: error-screenshots
-#          path: Godlike/*.png
-
       - name: 清理历史
         if: always()
         uses: Mattraks/delete-workflow-runs@v2
         with:
-          token: ${{ github.token }}
+          token: ${{ secrets.GITHUB_TOKEN }} # 显式传入有写权限的 Token
           repository: ${{ github.repository }}
           delete_workflow_pattern: ${{ github.workflow }}
-          retain_days: 0
+          retain_days: 2 # 建议保留至少2天，防止强删引发错误
           keep_minimum_runs: 2
