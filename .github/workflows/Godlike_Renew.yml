@@ -329,8 +329,7 @@ jobs:
           echo "[ERROR] ❌ 代理连接失败"
           cat xray.log
           exit 1
-          
-       bondage:
+
       - name: 运行续期脚本
         env:
           GODLIKE_1: ${{ secrets.GODLIKE_1 }}
